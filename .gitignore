@@ -1,0 +1,34 @@
+# --- Archivos locales de trabajo (no se suben) ---
+CLAUDE.md
+PROGRESO.md
+.claude/
+
+# --- Proyecto del Parcial 2 (solo referencia, no es parte de esta entrega) ---
+Front/
+
+# --- Android / Gradle ---
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+
+# --- Spring Boot / Maven ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+
+# Archivos de base de datos H2 (los datos iniciales se cargan desde data.sql)
+*.mv.db
+*.trace.db
+
+# --- Editores y sistema ---
+.vscode/
+.DS_Store
+Thumbs.db
+
+# OJO: NO ignorar *.jks ni el APK firmado: la pauta exige subirlos al repositorio.
