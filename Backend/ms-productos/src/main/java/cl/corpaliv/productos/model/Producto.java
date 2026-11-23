@@ -6,9 +6,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 // Producto o servicio del catálogo de Alba Lab.
 // Hibernate crea la tabla "productos" a partir de esta clase.
+// Las anotaciones de validación se revisan cuando el controller recibe un @Valid.
 @Entity
 @Table(name = "productos")
 public class Producto {
@@ -18,19 +24,27 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
     @Column(nullable = false, length = 100)
     private String nombre;
 
+    @NotBlank(message = "La descripción es obligatoria")
+    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
     @Column(nullable = false, length = 500)
     private String descripcion;
 
     // Precio en pesos chilenos. null = precio a convenir (servicios).
+    @PositiveOrZero(message = "El precio no puede ser negativo")
     private Integer precio;
 
     // "Producto" o "Servicio".
+    @NotNull(message = "La categoría es obligatoria")
+    @Pattern(regexp = "Producto|Servicio", message = "La categoría debe ser Producto o Servicio")
     @Column(nullable = false, length = 20)
     private String categoria;
 
+    @NotNull(message = "Indica si está disponible")
     @Column(nullable = false)
     private Boolean disponible;
 
