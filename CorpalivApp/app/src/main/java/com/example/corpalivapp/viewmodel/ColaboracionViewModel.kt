@@ -83,35 +83,14 @@ class ColaboracionViewModel(
         )
     }
 
-    // Valida todos los campos; si no hay errores, envía la solicitud al servidor.
+    // CREAR: valida todo y, si no hay errores, envía la solicitud nueva (POST).
     fun enviarFormulario() {
-        val actual = _formulario.value
-        val validado = actual.copy(
-            errorNombre = ColaboracionValidador.validarNombre(actual.nombre),
-            errorOrganizacion = ColaboracionValidador.validarOrganizacion(actual.organizacion),
-            errorCorreo = ColaboracionValidador.validarCorreo(actual.correo),
-            errorTipo = ColaboracionValidador.validarTipo(actual.tipo),
-            errorCantidad = ColaboracionValidador.validarCantidad(actual.cantidadPersonas),
-            errorFecha = ColaboracionValidador.validarFecha(actual.fecha),
-            errorAceptaContacto = ColaboracionValidador.validarAceptaContacto(actual.aceptaContacto),
-            errorEnvio = null
-        )
-        _formulario.value = validado
-
+        val validado = validarTodo()
         if (tieneErrores(validado)) {
             return
         }
 
-        val nuevaColaboracion = Colaboracion(
-            nombreContacto = validado.nombre.trim(),
-            organizacion = validado.organizacion.trim(),
-            correo = validado.correo.trim(),
-            tipoColaboracion = validado.tipo,
-            cantidadPersonas = validado.cantidadPersonas.trim().toInt(),
-            fechaContacto = validado.fecha.trim(),
-            aceptaContacto = validado.aceptaContacto
-        )
-
+        val nuevaColaboracion = crearColaboracion(validado)
         _formulario.value = validado.copy(enviando = true)
 
         viewModelScope.launch {
@@ -124,22 +103,95 @@ class ColaboracionViewModel(
                     fechaGuardada = guardada.fechaContacto
                 )
             } catch (e: IOException) {
-                _formulario.value = _formulario.value.copy(
-                    enviando = false,
-                    errorEnvio = "No se pudo conectar con el servidor. Tu solicitud no se envió."
-                )
+                marcarErrorEnvio("No se pudo conectar con el servidor. Tu solicitud no se envió.")
             } catch (e: HttpException) {
-                _formulario.value = _formulario.value.copy(
-                    enviando = false,
-                    errorEnvio = "El servidor rechazó la solicitud (${e.code()}). Revisa los datos."
-                )
+                marcarErrorEnvio("El servidor rechazó la solicitud (${e.code()}). Revisa los datos.")
             }
         }
+    }
+
+    // EDITAR (paso 1): llena el formulario con los datos de una solicitud existente.
+    fun cargarParaEditar(colaboracion: Colaboracion) {
+        _formulario.value = FormularioColaboracionEstado(
+            nombre = colaboracion.nombreContacto,
+            organizacion = colaboracion.organizacion,
+            correo = colaboracion.correo,
+            tipo = colaboracion.tipoColaboracion,
+            cantidadPersonas = colaboracion.cantidadPersonas.toString(),
+            fecha = colaboracion.fechaContacto,
+            aceptaContacto = colaboracion.aceptaContacto,
+            idEditando = colaboracion.id
+        )
+    }
+
+    // EDITAR (paso 2): valida igual que al crear y guarda los cambios (PUT).
+    fun guardarCambios() {
+        val validado = validarTodo()
+        val id = validado.idEditando
+        if (tieneErrores(validado) || id == null) {
+            return
+        }
+
+        val cambios = crearColaboracion(validado)
+        _formulario.value = validado.copy(enviando = true)
+
+        viewModelScope.launch {
+            try {
+                repository.actualizar(id, cambios)
+                _formulario.value = _formulario.value.copy(
+                    enviando = false,
+                    cambiosGuardados = true
+                )
+            } catch (e: IOException) {
+                marcarErrorEnvio("No se pudo conectar con el servidor. Los cambios no se guardaron.")
+            } catch (e: HttpException) {
+                marcarErrorEnvio("El servidor rechazó los cambios (${e.code()}). Revisa los datos.")
+            }
+        }
+    }
+
+    // La pantalla de edición avisa que ya volvió a "Mis solicitudes": se limpia el formulario.
+    fun terminarEdicion() {
+        _formulario.value = FormularioColaboracionEstado()
     }
 
     // La pantalla avisa que ya mostró la confirmación.
     fun ocultarMensajeExito() {
         _formulario.value = _formulario.value.copy(guardadoConExito = false)
+    }
+
+    // Valida todos los campos, guarda los errores en el estado y devuelve el estado validado.
+    private fun validarTodo(): FormularioColaboracionEstado {
+        val actual = _formulario.value
+        val validado = actual.copy(
+            errorNombre = ColaboracionValidador.validarNombre(actual.nombre),
+            errorOrganizacion = ColaboracionValidador.validarOrganizacion(actual.organizacion),
+            errorCorreo = ColaboracionValidador.validarCorreo(actual.correo),
+            errorTipo = ColaboracionValidador.validarTipo(actual.tipo),
+            errorCantidad = ColaboracionValidador.validarCantidad(actual.cantidadPersonas),
+            errorFecha = ColaboracionValidador.validarFecha(actual.fecha),
+            errorAceptaContacto = ColaboracionValidador.validarAceptaContacto(actual.aceptaContacto),
+            errorEnvio = null
+        )
+        _formulario.value = validado
+        return validado
+    }
+
+    // Pasa los textos del formulario (ya validados) al objeto que viaja al servidor.
+    private fun crearColaboracion(validado: FormularioColaboracionEstado): Colaboracion {
+        return Colaboracion(
+            nombreContacto = validado.nombre.trim(),
+            organizacion = validado.organizacion.trim(),
+            correo = validado.correo.trim(),
+            tipoColaboracion = validado.tipo,
+            cantidadPersonas = validado.cantidadPersonas.trim().toInt(),
+            fechaContacto = validado.fecha.trim(),
+            aceptaContacto = validado.aceptaContacto
+        )
+    }
+
+    private fun marcarErrorEnvio(mensaje: String) {
+        _formulario.value = _formulario.value.copy(enviando = false, errorEnvio = mensaje)
     }
 
     private fun tieneErrores(estado: FormularioColaboracionEstado): Boolean {

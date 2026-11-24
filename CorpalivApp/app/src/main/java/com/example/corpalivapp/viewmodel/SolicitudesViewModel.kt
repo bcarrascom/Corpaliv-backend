@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-// "Mis solicitudes": busca por correo en ms-colaboraciones y permite eliminar.
+// Lista de solicitudes de ms-colaboraciones. Lo usan dos pantallas, cada una con su propia instancia:
+// - "Mis solicitudes": busca por correo y permite eliminar.
+// - "Panel de vinculación": carga todas y permite cambiar el estado.
 class SolicitudesViewModel(
     private val repository: ColaboracionRepository
 ) : ViewModel() {
@@ -62,21 +64,52 @@ class SolicitudesViewModel(
         }
     }
 
+    // Panel de vinculación: todas las solicitudes, sin filtrar por correo.
+    fun cargarTodas() {
+        cargar(null)
+    }
+
+    // Panel de vinculación: PATCH del estado. Se reemplaza solo esa tarjeta con lo que devuelve el servidor.
+    fun cambiarEstado(colaboracion: Colaboracion, nuevoEstado: String) {
+        viewModelScope.launch {
+            try {
+                val actualizada = repository.cambiarEstado(colaboracion.id, nuevoEstado)
+                reemplazarEnLista(actualizada)
+                _estado.value = _estado.value.copy(
+                    mensaje = "Solicitud de ${actualizada.nombreContacto}: $nuevoEstado."
+                )
+            } catch (e: IOException) {
+                _estado.value = _estado.value.copy(
+                    mensaje = "No se pudo cambiar el estado: sin conexión con el servidor."
+                )
+            } catch (e: HttpException) {
+                _estado.value = _estado.value.copy(
+                    mensaje = "No se pudo cambiar el estado (error ${e.code()})."
+                )
+            }
+        }
+    }
+
     // La pantalla avisa que ya mostró el Snackbar.
     fun mensajeMostrado() {
         _estado.value = _estado.value.copy(mensaje = null)
     }
 
-    private fun cargar(correo: String) {
+    // correo = null significa "todas" (panel); si no, solo las de ese correo.
+    private fun cargar(correo: String?) {
+        var correoBuscado = ""
+        if (correo != null) {
+            correoBuscado = correo
+        }
         _estado.value = _estado.value.copy(
             cargando = true,
             error = null,
-            correoBuscado = correo
+            correoBuscado = correoBuscado
         )
 
         viewModelScope.launch {
             try {
-                val lista = repository.obtenerPorCorreo(correo)
+                val lista = pedirLista(correo)
                 _estado.value = _estado.value.copy(cargando = false, solicitudes = lista)
             } catch (e: IOException) {
                 _estado.value = _estado.value.copy(
@@ -90,5 +123,25 @@ class SolicitudesViewModel(
                 )
             }
         }
+    }
+
+    private suspend fun pedirLista(correo: String?): List<Colaboracion> {
+        if (correo == null) {
+            return repository.obtenerTodas()
+        }
+        return repository.obtenerPorCorreo(correo)
+    }
+
+    // Arma una lista nueva igual a la actual, pero con la solicitud actualizada en su lugar.
+    private fun reemplazarEnLista(actualizada: Colaboracion) {
+        val nuevaLista = mutableListOf<Colaboracion>()
+        for (solicitud in _estado.value.solicitudes) {
+            if (solicitud.id == actualizada.id) {
+                nuevaLista.add(actualizada)
+            } else {
+                nuevaLista.add(solicitud)
+            }
+        }
+        _estado.value = _estado.value.copy(solicitudes = nuevaLista)
     }
 }

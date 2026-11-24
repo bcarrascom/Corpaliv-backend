@@ -30,6 +30,12 @@ data class FormularioColaboracionEstado(
     // true justo después de guardar, para mostrar la confirmación
     val guardadoConExito: Boolean = false,
 
+    // Edición: id de la solicitud que se está editando (null = formulario de solicitud nueva)
+    val idEditando: Long? = null,
+
+    // true justo después de guardar los cambios de una edición
+    val cambiosGuardados: Boolean = false,
+
     // Datos de la última solicitud guardada, para el texto de la notificación
     val tipoGuardado: String = "",
     val fechaGuardada: String = ""
