@@ -124,7 +124,7 @@ fun HomeScreen(
 
                 SeccionCard(
                     titulo = "Mis solicitudes",
-                    descripcion = "Revisa las solicitudes de colaboración que enviaste desde este teléfono.",
+                    descripcion = "Revisa con tu correo el estado de las solicitudes que enviaste.",
                     textoBoton = "Ver mis solicitudes",
                     onClick = onSolicitudesClick
                 )

@@ -112,7 +112,7 @@ fun ContactoScreen(
             }
 
             estadoSnackbar.showSnackbar(
-                "¡Gracias! Tu solicitud se guardó correctamente."
+                "¡Gracias! Tu solicitud fue enviada a CORPALIV."
             )
 
             colaboracionViewModel.ocultarMensajeExito()
@@ -260,13 +260,30 @@ fun ContactoScreen(
                     error = formulario.errorAceptaContacto
                 )
 
+                // Error del servidor o de conexión al enviar.
+                val errorEnvio = formulario.errorEnvio
+                if (errorEnvio != null) {
+                    Text(
+                        text = errorEnvio,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                var textoBoton = "Enviar solicitud"
+                if (formulario.enviando) {
+                    textoBoton = "Enviando..."
+                }
+
+                // Se desactiva mientras espera al servidor, para no enviar dos veces.
                 Button(
                     onClick = {
                         colaboracionViewModel.enviarFormulario()
                     },
+                    enabled = !formulario.enviando,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Enviar solicitud")
+                    Text(textoBoton)
                 }
             }
         }

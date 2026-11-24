@@ -6,26 +6,20 @@ import com.example.corpalivapp.data.model.Colaboracion
 import com.example.corpalivapp.data.repository.ColaboracionRepository
 import com.example.corpalivapp.validacion.ColaboracionValidador
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+// Maneja el formulario de colaboración y lo envía a ms-colaboraciones.
 class ColaboracionViewModel(
     private val repository: ColaboracionRepository
 ) : ViewModel() {
-
-    val colaboraciones = repository.obtenerTodas()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
 
     // Estado del formulario: solo el ViewModel lo modifica, la pantalla solo lo lee.
     private val _formulario = MutableStateFlow(FormularioColaboracionEstado())
@@ -89,7 +83,7 @@ class ColaboracionViewModel(
         )
     }
 
-    // Valida todos los campos; si no hay errores, guarda en Room y limpia el formulario.
+    // Valida todos los campos; si no hay errores, envía la solicitud al servidor.
     fun enviarFormulario() {
         val actual = _formulario.value
         val validado = actual.copy(
@@ -99,7 +93,8 @@ class ColaboracionViewModel(
             errorTipo = ColaboracionValidador.validarTipo(actual.tipo),
             errorCantidad = ColaboracionValidador.validarCantidad(actual.cantidadPersonas),
             errorFecha = ColaboracionValidador.validarFecha(actual.fecha),
-            errorAceptaContacto = ColaboracionValidador.validarAceptaContacto(actual.aceptaContacto)
+            errorAceptaContacto = ColaboracionValidador.validarAceptaContacto(actual.aceptaContacto),
+            errorEnvio = null
         )
         _formulario.value = validado
 
@@ -117,13 +112,28 @@ class ColaboracionViewModel(
             aceptaContacto = validado.aceptaContacto
         )
 
+        _formulario.value = validado.copy(enviando = true)
+
         viewModelScope.launch {
-            repository.insertar(nuevaColaboracion)
-            _formulario.value = FormularioColaboracionEstado(
-                guardadoConExito = true,
-                tipoGuardado = nuevaColaboracion.tipoColaboracion,
-                fechaGuardada = nuevaColaboracion.fechaContacto
-            )
+            try {
+                val guardada = repository.crear(nuevaColaboracion)
+                // Formulario limpio + datos para la notificación.
+                _formulario.value = FormularioColaboracionEstado(
+                    guardadoConExito = true,
+                    tipoGuardado = guardada.tipoColaboracion,
+                    fechaGuardada = guardada.fechaContacto
+                )
+            } catch (e: IOException) {
+                _formulario.value = _formulario.value.copy(
+                    enviando = false,
+                    errorEnvio = "No se pudo conectar con el servidor. Tu solicitud no se envió."
+                )
+            } catch (e: HttpException) {
+                _formulario.value = _formulario.value.copy(
+                    enviando = false,
+                    errorEnvio = "El servidor rechazó la solicitud (${e.code()}). Revisa los datos."
+                )
+            }
         }
     }
 
@@ -140,17 +150,5 @@ class ColaboracionViewModel(
                 estado.errorCantidad != null ||
                 estado.errorFecha != null ||
                 estado.errorAceptaContacto != null
-    }
-
-    fun insertar(colaboracion: Colaboracion) {
-        viewModelScope.launch {
-            repository.insertar(colaboracion)
-        }
-    }
-
-    fun eliminar(colaboracion: Colaboracion) {
-        viewModelScope.launch {
-            repository.eliminar(colaboracion)
-        }
     }
 }

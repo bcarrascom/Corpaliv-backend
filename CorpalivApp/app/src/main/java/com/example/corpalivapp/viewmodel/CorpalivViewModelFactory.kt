@@ -27,9 +27,13 @@ class CorpalivViewModelFactory(
             }
 
             modelClass.isAssignableFrom(ColaboracionViewModel::class.java) -> {
-                val repository =
-                    ColaboracionRepository(database.colaboracionDao())
+                val repository = ColaboracionRepository(RetrofitClient.colaboracionApi)
                 ColaboracionViewModel(repository) as T
+            }
+
+            modelClass.isAssignableFrom(SolicitudesViewModel::class.java) -> {
+                val repository = ColaboracionRepository(RetrofitClient.colaboracionApi)
+                SolicitudesViewModel(repository) as T
             }
 
             else -> throw IllegalArgumentException(
