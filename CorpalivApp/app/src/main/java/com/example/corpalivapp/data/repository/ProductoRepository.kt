@@ -1,22 +1,14 @@
 package com.example.corpalivapp.data.repository
 
-
-import com.example.corpalivapp.data.local.ProductoDao
 import com.example.corpalivapp.data.model.Producto
-import kotlinx.coroutines.flow.Flow
+import com.example.corpalivapp.data.remote.ProductoApiService
 
+// Intermediario entre el ViewModel y ms-productos.
+// El ViewModel no sabe si los datos vienen de internet o de otra fuente.
 class ProductoRepository(
-    private val productoDao: ProductoDao
+    private val api: ProductoApiService
 ) {
-    fun obtenerTodos(): Flow<List<Producto>> {
-        return productoDao.obtenerTodos()
-    }
-
-    suspend fun insertar(producto: Producto) {
-        productoDao.insertar(producto)
-    }
-
-    suspend fun eliminar(producto: Producto) {
-        productoDao.eliminar(producto)
+    suspend fun obtenerTodos(): List<Producto> {
+        return api.listar()
     }
 }

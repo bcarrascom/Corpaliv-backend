@@ -57,6 +57,11 @@ fun TarjetaProducto(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
+                        text = producto.categoria,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
                         text = producto.nombre,
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -87,9 +92,9 @@ fun TarjetaProducto(
     }
 }
 
-// Precio 0 = servicio con precio a convenir. Si no, en pesos chilenos ($6.990).
-private fun formatearPrecio(precio: Double): String {
-    if (precio <= 0.0) {
+// Precio null = servicio con precio a convenir. Si no, en pesos chilenos ($6.990).
+private fun formatearPrecio(precio: Int?): String {
+    if (precio == null) {
         return "Precio a convenir"
     }
     val formato = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))

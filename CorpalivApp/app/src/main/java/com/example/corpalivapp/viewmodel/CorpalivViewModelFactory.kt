@@ -3,6 +3,7 @@ package com.example.corpalivapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.corpalivapp.data.local.CorpalivDatabase
+import com.example.corpalivapp.data.remote.RetrofitClient
 import com.example.corpalivapp.data.repository.ColaboracionRepository
 import com.example.corpalivapp.data.repository.ProductoRepository
 import com.example.corpalivapp.data.repository.ProgramaRepository
@@ -21,7 +22,7 @@ class CorpalivViewModelFactory(
             }
 
             modelClass.isAssignableFrom(ProductoViewModel::class.java) -> {
-                val repository = ProductoRepository(database.productoDao())
+                val repository = ProductoRepository(RetrofitClient.productoApi)
                 ProductoViewModel(repository) as T
             }
 

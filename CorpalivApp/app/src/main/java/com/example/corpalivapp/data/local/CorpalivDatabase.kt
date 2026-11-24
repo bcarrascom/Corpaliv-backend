@@ -6,26 +6,23 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.corpalivapp.data.model.Colaboracion
-import com.example.corpalivapp.data.model.Producto
 import com.example.corpalivapp.data.model.Programa
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+// Versión 2: los productos salieron de Room (ahora vienen de ms-productos).
 @Database(
     entities = [
         Programa::class,
-        Producto::class,
         Colaboracion::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class CorpalivDatabase : RoomDatabase() {
 
     abstract fun programaDao(): ProgramaDao
-
-    abstract fun productoDao(): ProductoDao
 
     abstract fun colaboracionDao(): ColaboracionDao
 
@@ -47,11 +44,13 @@ abstract class CorpalivDatabase : RoomDatabase() {
                             CoroutineScope(Dispatchers.IO).launch {
                                 INSTANCE?.let { database ->
                                     cargarProgramasIniciales(database)
-                                    cargarProductosIniciales(database)
                                 }
                             }
                         }
                     })
+                    // Si cambia la versión, borra la BD local y la crea de nuevo.
+                    // Sirve mientras Room se reemplaza por los microservicios.
+                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
 
                 INSTANCE = instancia
@@ -77,48 +76,6 @@ abstract class CorpalivDatabase : RoomDatabase() {
 
             programas.forEach { programa ->
                 database.programaDao().insertar(programa)
-            }
-        }
-
-        private suspend fun cargarProductosIniciales(
-            database: CorpalivDatabase
-        ) {
-            val productos = listOf(
-                Producto(
-                    nombre = "Velas aromáticas artesanales",
-                    descripcion = "Velas de cera de soya elaboradas en el taller de Alba Lab.",
-                    precio = 6990.0
-                ),
-                Producto(
-                    nombre = "Jabones naturales",
-                    descripcion = "Jabones hechos a mano con aceites esenciales.",
-                    precio = 3990.0
-                ),
-                Producto(
-                    nombre = "Caja de regalo corporativa",
-                    descripcion = "Set de productos del taller para regalos de empresa o eventos.",
-                    precio = 19990.0
-                ),
-                Producto(
-                    nombre = "Tarjetas y papelería artesanal",
-                    descripcion = "Tarjetas de saludo y libretas hechas con papel reciclado.",
-                    precio = 2490.0,
-                    disponible = false
-                ),
-                Producto(
-                    nombre = "Servicio de catering inclusivo",
-                    descripcion = "Coffee break y colaciones para reuniones, preparadas por el equipo de Alba Lab.",
-                    precio = 0.0
-                ),
-                Producto(
-                    nombre = "Taller de sensibilización para empresas",
-                    descripcion = "Capacitación sobre inclusión laboral de personas con discapacidad, como parte de la RSE.",
-                    precio = 0.0
-                )
-            )
-
-            productos.forEach { producto ->
-                database.productoDao().insertar(producto)
             }
         }
     }
