@@ -1,9 +1,19 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     // JaCoCo mide qué líneas del código ejecutan las pruebas unitarias (cobertura).
     jacoco
+}
+
+// Lee keystore.properties (en la carpeta CorpalivApp) con la ruta y las claves de la llave .jks.
+val datosFirma = Properties()
+val archivoFirma = rootProject.file("keystore.properties")
+if (archivoFirma.exists()) {
+    datosFirma.load(FileInputStream(archivoFirma))
 }
 
 android {
@@ -22,15 +32,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Firma del APK de release con la llave corpaliv.jks.
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file(datosFirma.getProperty("storeFile", "keystore/corpaliv.jks"))
+            storePassword = datosFirma.getProperty("storePassword")
+            keyAlias = datosFirma.getProperty("keyAlias")
+            keyPassword = datosFirma.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         debug {
             // Las pruebas unitarias de debug registran la cobertura en un archivo .exec.
             enableUnitTestCoverage = true
         }
         release {
+            // .\gradlew.bat assembleRelease genera el APK ya firmado.
+            signingConfig = signingConfigs.getByName("release")
+            // R8 achica y optimiza TODA la app. Antes tenía packageScope (solo androidx/kotlin/kotlinx)
+            // y eso dejaba referencias rotas: la app se cerraba al abrir (IllegalAccessError).
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }
     }

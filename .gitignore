@@ -17,6 +17,9 @@ captures/
 .cxx/
 .kotlin/
 
+# APK que genera el asistente de Android Studio (el APK oficial se copia a apk/)
+CorpalivApp/app/release/
+
 # --- Spring Boot / Maven ---
 target/
 !.mvn/wrapper/maven-wrapper.jar
