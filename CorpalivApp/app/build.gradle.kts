@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    // JaCoCo mide qué líneas del código ejecutan las pruebas unitarias (cobertura).
+    jacoco
 }
 
 android {
@@ -21,6 +23,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Las pruebas unitarias de debug registran la cobertura en un archivo .exec.
+            enableUnitTestCoverage = true
+        }
         release {
             optimization {
                 enable = true
@@ -35,6 +41,51 @@ android {
     buildFeatures {
         compose = true
     }
+    testCoverage {
+        jacocoVersion = libs.versions.jacoco.get()
+    }
+    testOptions {
+        unitTests {
+            // Si una prueba toca una clase de Android (por ejemplo Log), devuelve un valor por defecto
+            // en vez de fallar: las pruebas unitarias corren en el PC, no en el teléfono.
+            isReturnDefaultValues = true
+        }
+    }
+}
+
+jacoco {
+    toolVersion = libs.versions.jacoco.get()
+}
+
+// Reporte de cobertura SOLO de la lógica (ViewModels, repositorios, validador y clima).
+// Las pantallas de Compose no se cuentan: se prueban usando la app, no con pruebas unitarias.
+// Uso: .\gradlew.bat reporteCobertura  ->  app/build/reports/jacoco/reporteCobertura/html/index.html
+tasks.register<JacocoReport>("reporteCobertura") {
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
+
+    val clasesDeLogica = fileTree(
+        layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
+    ) {
+        include(
+            "**/viewmodel/**",
+            "**/data/repository/**",
+            "**/validacion/**",
+            "**/clima/**"
+        )
+    }
+
+    classDirectories.setFrom(clasesDeLogica)
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(
+        fileTree(layout.buildDirectory) {
+            include("outputs/unit_test_code_coverage/debugUnitTest/*.exec")
+        }
+    )
 }
 
 dependencies {
@@ -47,6 +98,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
