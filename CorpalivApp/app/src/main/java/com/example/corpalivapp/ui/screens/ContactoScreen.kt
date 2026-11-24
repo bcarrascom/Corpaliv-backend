@@ -38,7 +38,9 @@ import com.example.corpalivapp.data.local.CorpalivDatabase
 import com.example.corpalivapp.notificaciones.NotificacionColaboracion
 import com.example.corpalivapp.ui.components.FondoCorpaliv
 import com.example.corpalivapp.ui.components.FormularioColaboracion
+import com.example.corpalivapp.ui.components.TarjetaClima
 import com.example.corpalivapp.ui.components.TarjetaContactoDirecto
+import com.example.corpalivapp.viewmodel.ClimaViewModel
 import com.example.corpalivapp.viewmodel.ColaboracionViewModel
 import com.example.corpalivapp.viewmodel.CorpalivViewModelFactory
 import kotlinx.coroutines.launch
@@ -58,6 +60,14 @@ fun ContactoScreen(
 
     val formulario by colaboracionViewModel.formulario
         .collectAsStateWithLifecycle()
+
+    // Clima en la sede (API externa). Es independiente del formulario y de los microservicios.
+    val climaViewModel: ClimaViewModel = viewModel(factory = factory)
+    val clima by climaViewModel.estado.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        climaViewModel.cargarClima()
+    }
 
     val estadoSnackbar = remember {
         SnackbarHostState()
@@ -183,6 +193,11 @@ fun ContactoScreen(
                             }
                         }
                     }
+                )
+
+                TarjetaClima(
+                    estado = clima,
+                    alReintentar = { climaViewModel.cargarClima() }
                 )
 
                 Text(
