@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.corpalivapp.data.local.CorpalivDatabase
 import com.example.corpalivapp.data.remote.RetrofitClient
+import com.example.corpalivapp.data.repository.ClimaRepository
 import com.example.corpalivapp.data.repository.ColaboracionRepository
 import com.example.corpalivapp.data.repository.ProductoRepository
 import com.example.corpalivapp.data.repository.ProgramaRepository
@@ -29,6 +30,11 @@ class CorpalivViewModelFactory(
             modelClass.isAssignableFrom(ColaboracionViewModel::class.java) -> {
                 val repository = ColaboracionRepository(RetrofitClient.colaboracionApi)
                 ColaboracionViewModel(repository) as T
+            }
+
+            modelClass.isAssignableFrom(ClimaViewModel::class.java) -> {
+                val repository = ClimaRepository(RetrofitClient.climaApi)
+                ClimaViewModel(repository) as T
             }
 
             modelClass.isAssignableFrom(SolicitudesViewModel::class.java) -> {
