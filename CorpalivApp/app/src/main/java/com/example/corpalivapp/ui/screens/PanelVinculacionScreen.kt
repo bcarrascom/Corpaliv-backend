@@ -177,13 +177,18 @@ private fun TarjetaPanel(
     alCambiarEstado: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var textoPersonas = "${colaboracion.cantidadPersonas} personas"
+    if (colaboracion.cantidadPersonas == 1) {
+        textoPersonas = "1 persona"
+    }
+
     Card(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "${colaboracion.tipoColaboracion} · ${colaboracion.cantidadPersonas} personas",
+                text = "${colaboracion.tipoColaboracion} · $textoPersonas",
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
