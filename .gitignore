@@ -1,6 +1,7 @@
 # --- Archivos locales de trabajo (no se suben) ---
 CLAUDE.md
 PROGRESO.md
+GUIA_DEFENSA.md
 .claude/
 
 # --- Proyecto del Parcial 2 (solo referencia, no es parte de esta entrega) ---
@@ -16,6 +17,9 @@ captures/
 .externalNativeBuild/
 .cxx/
 .kotlin/
+
+# APK que genera el asistente de Android Studio (el APK oficial se copia a apk/)
+CorpalivApp/app/release/
 
 # --- Spring Boot / Maven ---
 target/
