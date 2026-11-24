@@ -52,6 +52,7 @@ import com.example.corpalivapp.viewmodel.SolicitudesViewModel
 @Composable
 fun SolicitudesScreen(
     onVolver: () -> Unit,
+    onEditar: (Colaboracion) -> Unit,
     database: CorpalivDatabase
 ) {
     val factory = remember(database) {
@@ -184,6 +185,7 @@ fun SolicitudesScreen(
                     ) { colaboracion ->
                         TarjetaSolicitud(
                             colaboracion = colaboracion,
+                            alEditar = { onEditar(colaboracion) },
                             alEliminar = { porEliminar = colaboracion },
                             modifier = Modifier.animateItem()
                         )

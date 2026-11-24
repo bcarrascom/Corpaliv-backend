@@ -36,7 +36,8 @@ fun HomeScreen(
     onProgramasClick: () -> Unit = {},
     onCatalogoClick: () -> Unit = {},
     onContactoClick: () -> Unit = {},
-    onSolicitudesClick: () -> Unit = {}
+    onSolicitudesClick: () -> Unit = {},
+    onPanelClick: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = Color.Transparent,
@@ -127,6 +128,14 @@ fun HomeScreen(
                     descripcion = "Revisa con tu correo el estado de las solicitudes que enviaste.",
                     textoBoton = "Ver mis solicitudes",
                     onClick = onSolicitudesClick
+                )
+
+                SeccionCard(
+                    titulo = "Panel de vinculación",
+                    descripcion = "Para el equipo de CORPALIV: revisa todas las solicitudes " +
+                            "recibidas y actualiza su estado.",
+                    textoBoton = "Abrir panel",
+                    onClick = onPanelClick
                 )
             }
         }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,10 +20,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.corpalivapp.data.model.Colaboracion
 
-// Tarjeta con los datos de una solicitud guardada y un botón para eliminarla.
+// Tarjeta con los datos de una solicitud y botones para editarla o eliminarla.
 @Composable
 fun TarjetaSolicitud(
     colaboracion: Colaboracion,
+    alEditar: () -> Unit,
     alEliminar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,6 +64,13 @@ fun TarjetaSolicitud(
                     text = "Estado: ${colaboracion.estado}",
                     style = MaterialTheme.typography.labelLarge,
                     color = colorDelEstado(colaboracion.estado)
+                )
+            }
+
+            IconButton(onClick = alEditar) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = "Editar solicitud de ${colaboracion.tipoColaboracion}"
                 )
             }
 
