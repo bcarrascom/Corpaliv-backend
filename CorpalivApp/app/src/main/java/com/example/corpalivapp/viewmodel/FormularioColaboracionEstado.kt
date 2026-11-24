@@ -21,8 +21,20 @@ data class FormularioColaboracionEstado(
     val errorFecha: String? = null,
     val errorAceptaContacto: String? = null,
 
+    // true mientras se espera la respuesta del servidor (el botón se desactiva)
+    val enviando: Boolean = false,
+
+    // Mensaje si el envío al servidor falló (null = sin error)
+    val errorEnvio: String? = null,
+
     // true justo después de guardar, para mostrar la confirmación
     val guardadoConExito: Boolean = false,
+
+    // Edición: id de la solicitud que se está editando (null = formulario de solicitud nueva)
+    val idEditando: Long? = null,
+
+    // true justo después de guardar los cambios de una edición
+    val cambiosGuardados: Boolean = false,
 
     // Datos de la última solicitud guardada, para el texto de la notificación
     val tipoGuardado: String = "",

@@ -36,4 +36,8 @@ object RetrofitClient {
     val productoApi: ProductoApiService by lazy {
         crearRetrofit(ApiConfig.URL_PRODUCTOS).create(ProductoApiService::class.java)
     }
+
+    val colaboracionApi: ColaboracionApiService by lazy {
+        crearRetrofit(ApiConfig.URL_COLABORACIONES).create(ColaboracionApiService::class.java)
+    }
 }

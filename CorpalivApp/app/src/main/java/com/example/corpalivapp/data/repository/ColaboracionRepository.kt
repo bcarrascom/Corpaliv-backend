@@ -1,22 +1,36 @@
 package com.example.corpalivapp.data.repository
 
-
-import com.example.corpalivapp.data.local.ColaboracionDao
+import com.example.corpalivapp.data.model.CambioEstado
 import com.example.corpalivapp.data.model.Colaboracion
-import kotlinx.coroutines.flow.Flow
+import com.example.corpalivapp.data.remote.ColaboracionApiService
 
+// Intermediario entre los ViewModels y ms-colaboraciones.
 class ColaboracionRepository(
-    private val colaboracionDao: ColaboracionDao
+    private val api: ColaboracionApiService
 ) {
-    fun obtenerTodas(): Flow<List<Colaboracion>> {
-        return colaboracionDao.obtenerTodas()
+    // Panel de vinculación: todas las solicitudes.
+    suspend fun obtenerTodas(): List<Colaboracion> {
+        return api.listar(null)
     }
 
-    suspend fun insertar(colaboracion: Colaboracion) {
-        colaboracionDao.insertar(colaboracion)
+    // "Mis solicitudes": solo las de un correo.
+    suspend fun obtenerPorCorreo(correo: String): List<Colaboracion> {
+        return api.listar(correo)
     }
 
-    suspend fun eliminar(colaboracion: Colaboracion) {
-        colaboracionDao.eliminar(colaboracion)
+    suspend fun crear(colaboracion: Colaboracion): Colaboracion {
+        return api.crear(colaboracion)
+    }
+
+    suspend fun actualizar(id: Long, colaboracion: Colaboracion): Colaboracion {
+        return api.actualizar(id, colaboracion)
+    }
+
+    suspend fun cambiarEstado(id: Long, nuevoEstado: String): Colaboracion {
+        return api.cambiarEstado(id, CambioEstado(nuevoEstado))
+    }
+
+    suspend fun eliminar(id: Long) {
+        api.eliminar(id)
     }
 }

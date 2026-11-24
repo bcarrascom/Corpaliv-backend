@@ -7,17 +7,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,20 +30,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.corpalivapp.acciones.AccionesContacto
 import com.example.corpalivapp.data.local.CorpalivDatabase
 import com.example.corpalivapp.notificaciones.NotificacionColaboracion
-import com.example.corpalivapp.ui.components.CampoFecha
-import com.example.corpalivapp.ui.components.CampoFormulario
-import com.example.corpalivapp.ui.components.CasillaAceptacion
 import com.example.corpalivapp.ui.components.FondoCorpaliv
-import com.example.corpalivapp.ui.components.SelectorTipo
+import com.example.corpalivapp.ui.components.FormularioColaboracion
 import com.example.corpalivapp.ui.components.TarjetaContactoDirecto
-import com.example.corpalivapp.validacion.ColaboracionValidador
 import com.example.corpalivapp.viewmodel.ColaboracionViewModel
 import com.example.corpalivapp.viewmodel.CorpalivViewModelFactory
 import kotlinx.coroutines.launch
@@ -112,7 +101,7 @@ fun ContactoScreen(
             }
 
             estadoSnackbar.showSnackbar(
-                "¡Gracias! Tu solicitud se guardó correctamente."
+                "¡Gracias! Tu solicitud fue enviada a CORPALIV."
             )
 
             colaboracionViewModel.ocultarMensajeExito()
@@ -203,71 +192,12 @@ fun ContactoScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                CampoFormulario(
-                    valor = formulario.nombre,
-                    alCambiar = colaboracionViewModel::cambiarNombre,
-                    etiqueta = "Nombre completo",
-                    icono = Icons.Filled.Person,
-                    error = formulario.errorNombre
+                FormularioColaboracion(
+                    formulario = formulario,
+                    viewModel = colaboracionViewModel,
+                    textoBoton = "Enviar solicitud",
+                    alEnviar = { colaboracionViewModel.enviarFormulario() }
                 )
-
-                CampoFormulario(
-                    valor = formulario.organizacion,
-                    alCambiar = colaboracionViewModel::cambiarOrganizacion,
-                    etiqueta = "Organización",
-                    icono = Icons.Filled.Business,
-                    error = formulario.errorOrganizacion
-                )
-
-                CampoFormulario(
-                    valor = formulario.correo,
-                    alCambiar = colaboracionViewModel::cambiarCorreo,
-                    etiqueta = "Correo electrónico",
-                    icono = Icons.Filled.Email,
-                    error = formulario.errorCorreo,
-                    tipoTeclado = KeyboardType.Email
-                )
-
-                SelectorTipo(
-                    seleccionado = formulario.tipo,
-                    opciones = ColaboracionValidador.TIPOS_COLABORACION,
-                    alElegir = colaboracionViewModel::cambiarTipo,
-                    error = formulario.errorTipo
-                )
-
-                CampoFormulario(
-                    valor = formulario.cantidadPersonas,
-                    alCambiar = colaboracionViewModel::cambiarCantidad,
-                    etiqueta = "Cantidad de personas",
-                    icono = Icons.Filled.Groups,
-                    error = formulario.errorCantidad,
-                    tipoTeclado = KeyboardType.Number
-                )
-
-                CampoFecha(
-                    fecha = formulario.fecha,
-                    alElegir =
-                        colaboracionViewModel::elegirFechaDelCalendario,
-                    error = formulario.errorFecha
-                )
-
-                CasillaAceptacion(
-                    marcada = formulario.aceptaContacto,
-                    alCambiar =
-                        colaboracionViewModel::cambiarAceptaContacto,
-                    texto = "Acepto que CORPALIV me contacte en relación " +
-                            "con mi solicitud.",
-                    error = formulario.errorAceptaContacto
-                )
-
-                Button(
-                    onClick = {
-                        colaboracionViewModel.enviarFormulario()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Enviar solicitud")
-                }
             }
         }
     }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -15,13 +16,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.corpalivapp.data.model.Colaboracion
 
-// Tarjeta con los datos de una solicitud guardada y un botón para eliminarla.
+// Tarjeta con los datos de una solicitud y botones para editarla o eliminarla.
 @Composable
 fun TarjetaSolicitud(
     colaboracion: Colaboracion,
+    alEditar: () -> Unit,
     alEliminar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -57,6 +60,18 @@ fun TarjetaSolicitud(
                     text = "Contacto: ${colaboracion.fechaContacto} · $textoPersonas",
                     style = MaterialTheme.typography.bodySmall
                 )
+                Text(
+                    text = "Estado: ${colaboracion.estado}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colorDelEstado(colaboracion.estado)
+                )
+            }
+
+            IconButton(onClick = alEditar) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = "Editar solicitud de ${colaboracion.tipoColaboracion}"
+                )
             }
 
             IconButton(onClick = alEliminar) {
@@ -66,5 +81,15 @@ fun TarjetaSolicitud(
                 )
             }
         }
+    }
+}
+
+// Color del texto del estado: pendiente resalta, cerrada se ve apagada.
+@Composable
+private fun colorDelEstado(estado: String): Color {
+    return when (estado) {
+        "Pendiente" -> MaterialTheme.colorScheme.tertiary
+        "Contactado" -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.outline
     }
 }
