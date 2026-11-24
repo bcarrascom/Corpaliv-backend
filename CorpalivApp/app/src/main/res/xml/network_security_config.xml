@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android bloquea HTTP sin cifrar desde la versión 9.
+     Los microservicios corren en el PC con HTTP, así que se permite solo para esas direcciones.
+     Todo lo demás (por ejemplo la API del clima) sigue exigiendo HTTPS. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- El PC visto desde el emulador de Android Studio -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
