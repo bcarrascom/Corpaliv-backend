@@ -40,4 +40,9 @@ object RetrofitClient {
     val colaboracionApi: ColaboracionApiService by lazy {
         crearRetrofit(ApiConfig.URL_COLABORACIONES).create(ColaboracionApiService::class.java)
     }
+
+    // Mismo cliente HTTP, otra URL base: la API externa del clima.
+    val climaApi: ClimaApiService by lazy {
+        crearRetrofit(ApiConfig.URL_CLIMA).create(ClimaApiService::class.java)
+    }
 }
