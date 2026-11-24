@@ -5,20 +5,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
-// Programa institucional de CORPALIV.
-// Hibernate crea la tabla "programas" a partir de esta clase.
-// Las validaciones se ejecutan cuando el controller recibe un @Valid.
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "programas")
 public class Programa {
 
-    // Llave primaria; MySQL la genera automáticamente.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,23 +27,52 @@ public class Programa {
     @Column(nullable = false, length = 100)
     private String nombre;
 
+    @NotBlank(message = "El resumen es obligatorio")
+    @Size(max = 300, message = "El resumen no puede superar los 300 caracteres")
+    @Column(nullable = false, length = 300)
+    private String resumen;
+
     @NotBlank(message = "La descripción es obligatoria")
-    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
-    @NotNull(message = "Indica la cantidad de beneficiarios")
-    @PositiveOrZero(message = "Los beneficiarios no pueden ser negativos")
-    @Column(nullable = false)
-    private Integer beneficiarios;
+    @NotBlank(message = "La categoría es obligatoria")
+    @Size(max = 100, message = "La categoría no puede superar los 100 caracteres")
+    @Column(nullable = false, length = 100)
+    private String categoria;
+
+    @Column(name = "imagen_url", length = 500)
+    private String imagenUrl;
+
+    @NotBlank(message = "El estado de publicación es obligatorio")
+    @Column(name = "estado_publicacion", nullable = false, length = 30)
+    private String estadoPublicacion;
 
     @NotNull(message = "Indica si el programa está activo")
     @Column(nullable = false)
-    private Boolean activo;
+    private Boolean activo = true;
 
-    // JPA necesita un constructor vacío.
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion;
+
     public Programa() {
     }
+
+    @PrePersist
+    protected void antesDeGuardar() {
+        fechaCreacion = LocalDateTime.now();
+        fechaActualizacion = fechaCreacion;
+    }
+
+    @PreUpdate
+    protected void antesDeActualizar() {
+        fechaActualizacion = LocalDateTime.now();
+    }
+
+    // Getters y setters
 
     public Long getId() {
         return id;
@@ -62,6 +90,14 @@ public class Programa {
         this.nombre = nombre;
     }
 
+    public String getResumen() {
+        return resumen;
+    }
+
+    public void setResumen(String resumen) {
+        this.resumen = resumen;
+    }
+
     public String getDescripcion() {
         return descripcion;
     }
@@ -70,12 +106,28 @@ public class Programa {
         this.descripcion = descripcion;
     }
 
-    public Integer getBeneficiarios() {
-        return beneficiarios;
+    public String getCategoria() {
+        return categoria;
     }
 
-    public void setBeneficiarios(Integer beneficiarios) {
-        this.beneficiarios = beneficiarios;
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public String getImagenUrl() {
+        return imagenUrl;
+    }
+
+    public void setImagenUrl(String imagenUrl) {
+        this.imagenUrl = imagenUrl;
+    }
+
+    public String getEstadoPublicacion() {
+        return estadoPublicacion;
+    }
+
+    public void setEstadoPublicacion(String estadoPublicacion) {
+        this.estadoPublicacion = estadoPublicacion;
     }
 
     public Boolean getActivo() {
@@ -84,5 +136,13 @@ public class Programa {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public LocalDateTime getFechaActualizacion() {
+        return fechaActualizacion;
     }
 }

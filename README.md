@@ -139,6 +139,39 @@ vista desde el emulador).
 |---|---|---|
 | GET | `/v1/forecast?latitude=-33.45&longitude=-70.66&current=temperature_2m,weather_code,wind_speed_10m&timezone=America/Santiago` | Clima actual en la sede (temperatura, estado del tiempo y viento) |
 
+## Ejecutar el backend con Docker
+
+Abre Docker Desktop con contenedores Linux, o usa Docker Engine con el plugin Docker Compose.
+Desde la raíz del repositorio, ejecuta:
+
+```powershell
+cd Backend
+docker compose up --build -d
+docker compose ps
+```
+
+Compose compila los tres microservicios con Java 17 e inicia MariaDB con una base por
+servicio. La primera compilación descarga las imágenes y dependencias. Cuando los
+servicios hayan arrancado, abre estas rutas para comprobar que responden:
+
+- Productos: [localhost:8081/api/productos](http://localhost:8081/api/productos)
+- Programas: [localhost:8082/api/programas](http://localhost:8082/api/programas)
+- Colaboraciones: [localhost:8083/api/colaboraciones](http://localhost:8083/api/colaboraciones)
+
+Para abrir la app, sigue el paso **3. App** de la sección siguiente. El emulador usa
+`10.0.2.2` con los mismos puertos.
+
+Para ver los logs o detener los contenedores, ejecuta desde `Backend`:
+
+```powershell
+docker compose logs -f
+docker compose down
+```
+
+Sal de la vista de logs con Ctrl+C. El volumen de MariaDB conserva los datos al
+ejecutar `docker compose down`. Usa esta configuración y sus credenciales para
+desarrollo local.
+
 ## Pasos para ejecutar
 
 ### Requisitos

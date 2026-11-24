@@ -1,0 +1,65 @@
+x-microservice: &microservice
+  depends_on:
+    db:
+      condition: service_healthy
+
+x-db-credentials: &db-credentials
+  DB_USER: corpaliv
+  DB_PASSWORD: corpaliv-local
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_USER: corpaliv
+      MARIADB_PASSWORD: corpaliv-local
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./sql/crear-bases.sql:/docker-entrypoint-initdb.d/01-crear-bases.sql:ro
+      - ./sql/docker-permisos.sql:/docker-entrypoint-initdb.d/02-permisos.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  ms-productos:
+    <<: *microservice
+    build:
+      context: .
+      args:
+        SERVICE: ms-productos
+    environment:
+      <<: *db-credentials
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/corpaliv_productos
+    ports:
+      - "8081:8081"
+
+  ms-programas:
+    <<: *microservice
+    build:
+      context: .
+      args:
+        SERVICE: ms-programas
+    environment:
+      <<: *db-credentials
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/corpaliv_programas
+    ports:
+      - "8082:8082"
+
+  ms-colaboraciones:
+    <<: *microservice
+    build:
+      context: .
+      args:
+        SERVICE: ms-colaboraciones
+    environment:
+      <<: *db-credentials
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/corpaliv_colaboraciones
+    ports:
+      - "8083:8083"
+
+volumes:
+  db-data:

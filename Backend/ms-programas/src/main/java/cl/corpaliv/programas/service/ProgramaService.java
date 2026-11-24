@@ -3,62 +3,60 @@ package cl.corpaliv.programas.service;
 import cl.corpaliv.programas.exception.ProgramaNoEncontradoException;
 import cl.corpaliv.programas.model.Programa;
 import cl.corpaliv.programas.repository.ProgramaRepository;
-
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
-// Lógica de negocio de los programas.
-// El controller llama a esta clase y esta utiliza el repositorio.
+import java.util.List;
+
 @Service
 public class ProgramaService {
 
     private final ProgramaRepository programaRepository;
 
-    // Spring entrega el repositorio mediante inyección de dependencias.
     public ProgramaService(ProgramaRepository programaRepository) {
         this.programaRepository = programaRepository;
     }
 
-    // Obtener todos los programas.
+    // Obtener todos los programas
     public List<Programa> listarTodos() {
         return programaRepository.findAll();
     }
 
-    // Buscar un programa por su ID.
-    public Programa buscarPorId(Long id) {
-        Optional<Programa> encontrado = programaRepository.findById(id);
-
-        if (encontrado.isEmpty()) {
-            throw new ProgramaNoEncontradoException(id);
-        }
-
-        return encontrado.get();
+    // Obtener solamente los programas publicados y activos
+    public List<Programa> listarPublicados() {
+        return programaRepository.findByEstadoPublicacionAndActivoTrue("PUBLICADO");
     }
 
-    // Registrar un nuevo programa.
+    // Buscar un programa por su ID
+    public Programa buscarPorId(Long id) {
+        return programaRepository.findById(id)
+                .orElseThrow(() -> new ProgramaNoEncontradoException(id));
+    }
+
+    // Crear un programa
     public Programa crear(Programa programa) {
-        // El ID será generado por la base de datos.
         programa.setId(null);
         return programaRepository.save(programa);
     }
 
-    // Actualizar un programa existente.
-    public Programa actualizar(Long id, Programa datosNuevos) {
-        Programa existente = buscarPorId(id);
+    // Actualizar un programa existente
+    public Programa actualizar(Long id, Programa datosActualizados) {
 
-        existente.setNombre(datosNuevos.getNombre());
-        existente.setDescripcion(datosNuevos.getDescripcion());
-        existente.setBeneficiarios(datosNuevos.getBeneficiarios());
-        existente.setActivo(datosNuevos.getActivo());
+        Programa programa = buscarPorId(id);
 
-        return programaRepository.save(existente);
+        programa.setNombre(datosActualizados.getNombre());
+        programa.setResumen(datosActualizados.getResumen());
+        programa.setDescripcion(datosActualizados.getDescripcion());
+        programa.setCategoria(datosActualizados.getCategoria());
+        programa.setImagenUrl(datosActualizados.getImagenUrl());
+        programa.setEstadoPublicacion(datosActualizados.getEstadoPublicacion());
+        programa.setActivo(datosActualizados.getActivo());
+
+        return programaRepository.save(programa);
     }
 
-    // Eliminar un programa existente.
+    // Eliminar un programa
     public void eliminar(Long id) {
-        Programa existente = buscarPorId(id);
-        programaRepository.delete(existente);
+        Programa programa = buscarPorId(id);
+        programaRepository.delete(programa);
     }
 }
