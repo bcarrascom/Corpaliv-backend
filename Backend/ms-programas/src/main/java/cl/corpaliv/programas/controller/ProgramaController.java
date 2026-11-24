@@ -2,56 +2,62 @@ package cl.corpaliv.programas.controller;
 
 import cl.corpaliv.programas.model.Programa;
 import cl.corpaliv.programas.service.ProgramaService;
-
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/programas")
+@CrossOrigin(origins = "*")
 public class ProgramaController {
 
     private final ProgramaService programaService;
 
-    // Inyección de dependencias.
     public ProgramaController(ProgramaService programaService) {
         this.programaService = programaService;
     }
 
-    // GET: listar todos los programas.
+    // Obtener todos los programas
     @GetMapping
-    public List<Programa> listarTodos() {
-        return programaService.listarTodos();
+    public ResponseEntity<List<Programa>> listarTodos() {
+        return ResponseEntity.ok(programaService.listarTodos());
     }
 
-    // GET: buscar un programa por ID.
+    // Obtener solamente los programas publicados y activos
+    @GetMapping("/publicados")
+    public ResponseEntity<List<Programa>> listarPublicados() {
+        return ResponseEntity.ok(programaService.listarPublicados());
+    }
+
+    // Buscar un programa por su ID
     @GetMapping("/{id}")
-    public Programa buscarPorId(@PathVariable Long id) {
-        return programaService.buscarPorId(id);
+    public ResponseEntity<Programa> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(programaService.buscarPorId(id));
     }
 
-    // POST: registrar un nuevo programa.
+    // Crear un programa
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Programa crear(@Valid @RequestBody Programa programa) {
-        return programaService.crear(programa);
+    public ResponseEntity<Programa> crear(@Valid @RequestBody Programa programa) {
+        Programa nuevoPrograma = programaService.crear(programa);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPrograma);
     }
 
-    // PUT: actualizar un programa existente.
+    // Actualizar un programa
     @PutMapping("/{id}")
-    public Programa actualizar(
+    public ResponseEntity<Programa> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody Programa programa) {
-        return programaService.actualizar(id, programa);
+
+        return ResponseEntity.ok(programaService.actualizar(id, programa));
     }
 
-    // DELETE: eliminar un programa.
+    // Eliminar un programa
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         programaService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }
