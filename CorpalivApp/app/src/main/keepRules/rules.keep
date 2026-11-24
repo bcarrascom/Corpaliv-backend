@@ -1,12 +1,6 @@
-# Add project specific R8 rules here.
-# AGP will combine all keep rule files in src/main/keepRules to pass to R8
-#
-# For more details, see
-#   https://d.android.com/r/tools/r8/keep-rules
-
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Reglas de R8 para el APK de release.
+# R8 achica el APK quitando y renombrando clases y campos que "parecen" no usarse.
+# Gson llena los modelos leyendo los NOMBRES de sus campos por reflexión, así que si R8 los
+# renombra (por ejemplo "nombre" -> "a"), el JSON ya no calza y los datos llegan vacíos.
+# Esta regla deja intactas las clases de los modelos que viajan como JSON.
+-keep class com.example.corpalivapp.data.model.** { *; }
