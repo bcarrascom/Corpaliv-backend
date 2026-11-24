@@ -2,32 +2,42 @@ package com.example.corpalivapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.corpalivapp.data.model.Producto
 import com.example.corpalivapp.data.repository.ProductoRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 class ProductoViewModel(
     private val repository: ProductoRepository
 ) : ViewModel() {
 
-    val productos = repository.obtenerTodos()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    // Solo el ViewModel cambia el estado; la pantalla solo lo lee.
+    // Parte "cargando" para que no se vea la lista vacía antes de la primera respuesta.
+    private val _estado = MutableStateFlow(CatalogoEstado(cargando = true))
+    val estado: StateFlow<CatalogoEstado> = _estado.asStateFlow()
 
-    fun insertar(producto: Producto) {
-        viewModelScope.launch {
-            repository.insertar(producto)
-        }
-    }
+    // La llama la pantalla cada vez que se abre, y el botón "Reintentar".
+    fun cargarProductos() {
+        _estado.value = CatalogoEstado(cargando = true)
 
-    fun eliminar(producto: Producto) {
         viewModelScope.launch {
-            repository.eliminar(producto)
+            try {
+                val productos = repository.obtenerTodos()
+                _estado.value = CatalogoEstado(productos = productos)
+            } catch (e: IOException) {
+                // Sin internet, servidor apagado o tiempo de espera agotado.
+                _estado.value = CatalogoEstado(
+                    error = "No se pudo conectar con el servidor. Revisa tu conexión."
+                )
+            } catch (e: HttpException) {
+                // El servidor respondió, pero con un código de error (404, 500...).
+                _estado.value = CatalogoEstado(
+                    error = "El servidor respondió con un error (${e.code()})."
+                )
+            }
         }
     }
 }
